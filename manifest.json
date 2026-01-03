@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Coursera Vietnamese Focus Subtitles",
+  "version": "1.0",
+  "description": "Hiển thị phụ đề đang phát trực tiếp lên khung video Coursera",
+  "content_scripts": [
+    {
+      "matches": ["https://www.coursera.org/*"],
+      "js": ["content.js"]
+    }
+  ]
+}

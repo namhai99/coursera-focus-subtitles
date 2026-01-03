@@ -1,0 +1,17 @@
+#fixed-subtitle-overlay {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 80%;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1.4;
+  border-radius: 6px;
+  z-index: 9999;
+  text-align: center;
+  pointer-events: none;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+}
