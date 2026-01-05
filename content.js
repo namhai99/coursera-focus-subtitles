@@ -1,74 +1,109 @@
-// Tạo element hiển thị phụ đề với style đẹp hơn
+let currentSettings = {
+    fontSize: '26',
+    bgOpacity: '0.75',
+    isLocked: true,
+    position: { bottom: '12%', left: '50%' }
+};
+
 const subOverlay = document.createElement('div');
 subOverlay.id = 'custom-sub-overlay';
 subOverlay.style.cssText = `
     position: absolute;
-    bottom: 12%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 85%;
-    background-color: rgba(0, 0, 0, 0.75);
+    width: 80%;
+    min-height: 40px;
     color: #ffffff;
     padding: 12px 20px;
     border-radius: 12px;
-    font-size: 26px;
     text-align: center;
-    z-index: 10000;
-    pointer-events: none;
+    z-index: 2147483647;
     font-weight: 600;
     line-height: 1.4;
     text-shadow: 1px 1px 3px rgba(0,0,0,1);
-    display: none;
-    transition: all 0.2s ease;
+    display: block !important;
+    user-select: none;
+    box-sizing: border-box;
+    transition: background-color 0.2s, font-size 0.2s;
+    transform: translateX(-50%);
+    pointer-events: auto;
 `;
 
-// Hàm gắn overlay vào khung video
+function applySettings() {
+    subOverlay.style.fontSize = currentSettings.fontSize + 'px';
+    subOverlay.style.backgroundColor = `rgba(0, 0, 0, ${currentSettings.bgOpacity})`;
+    subOverlay.style.bottom = currentSettings.position.bottom;
+    subOverlay.style.left = currentSettings.position.left;
+    subOverlay.style.cursor = currentSettings.isLocked ? 'default' : 'move';
+}
+
+// Lấy data từ Storage
+chrome.storage.sync.get(['fontSize', 'bgOpacity', 'isLocked', 'position'], (data) => {
+    if (data.fontSize) currentSettings.fontSize = data.fontSize;
+    if (data.bgOpacity) currentSettings.bgOpacity = data.bgOpacity;
+    if (data.isLocked !== undefined) currentSettings.isLocked = data.isLocked;
+    if (data.position) currentSettings.position = data.position;
+    applySettings();
+});
+
+// Quan trọng: Đồng bộ thời gian thực khi chỉnh Popup
+chrome.storage.onChanged.addListener((changes) => {
+    if (changes.fontSize) currentSettings.fontSize = changes.fontSize.newValue;
+    if (changes.bgOpacity) currentSettings.bgOpacity = changes.bgOpacity.newValue;
+    if (changes.isLocked) currentSettings.isLocked = changes.isLocked.newValue;
+    if (changes.position) currentSettings.position = changes.position.newValue;
+    applySettings();
+});
+
+let isDragging = false;
+subOverlay.addEventListener('mousedown', (e) => {
+    if (currentSettings.isLocked) return; 
+    isDragging = true;
+    subOverlay.style.transition = 'none';
+    e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const container = subOverlay.parentElement;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    let x = ((e.clientX - rect.left) / rect.width) * 100;
+    let y = 100 - (((e.clientY - rect.top) / rect.height) * 100);
+    x = Math.max(5, Math.min(95, x));
+    y = Math.max(5, Math.min(95, y));
+    currentSettings.position = { bottom: `${y}%`, left: `${x}%` };
+    applySettings();
+});
+
+document.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        subOverlay.style.transition = 'all 0.2s ease';
+        chrome.storage.sync.set({ position: currentSettings.position });
+    }
+});
+
 function initOverlay() {
-    // Tìm container chứa video dựa trên class bạn cung cấp
-    const videoContainer = document.querySelector('.rc-VideoControlsContainer');
-    if (videoContainer && !document.getElementById('custom-sub-overlay')) {
-        videoContainer.style.position = 'relative'; // Đảm bảo container có position để overlay bám vào
-        videoContainer.appendChild(subOverlay);
-        subOverlay.style.display = 'block';
+    const videoContainer = document.querySelector('.rc-VideoControlsContainer') || document.querySelector('.vjs-tech');
+    const target = videoContainer?.parentElement || videoContainer;
+    if (target && !document.getElementById('custom-sub-overlay')) {
+        target.style.position = 'relative';
+        target.appendChild(subOverlay);
     }
 }
 
-// Hàm lấy text đã được dịch
-function getTranslatedText() {
-    // 1. Tìm tất cả các đoạn phrase trong bản chép lời
-    const phrases = document.querySelectorAll('.rc-Phrase');
-    let activeText = "";
-
-    phrases.forEach(phrase => {
-        // Kiểm tra xem phrase này có đang "active" (màu xanh/đang phát) không
-        // Coursera dùng class 'active' hoặc aria-label thay đổi để đánh dấu
-        const isActive = phrase.classList.contains('active') || 
-                         window.getComputedStyle(phrase).backgroundColor !== 'rgba(0, 0, 0, 0)';
-
-        if (isActive) {
-            // Lấy text bên trong. Nếu có Google Translate, nó sẽ nằm trong các thẻ <font>
-            // Sử dụng innerText của phrase sẽ lấy được kết quả cuối cùng sau khi dịch
-            activeText = phrase.innerText.trim();
-        }
-    });
-
-    return activeText;
-}
-
-// Chạy vòng lặp để cập nhật liên tục
 function startSubtitleSync() {
     setInterval(() => {
         initOverlay();
-        
-        const newText = getTranslatedText();
-        
-        if (newText && newText !== subOverlay.innerText) {
-            // Chỉ cập nhật nếu text khác đi để tránh nhấp nháy
-            subOverlay.innerText = newText;
-            subOverlay.style.display = 'block';
+        const phrases = document.querySelectorAll('.rc-Phrase');
+        let activeText = "";
+        phrases.forEach(phrase => {
+            const isActive = phrase.classList.contains('active') || 
+                             window.getComputedStyle(phrase).backgroundColor !== 'rgba(0, 0, 0, 0)';
+            if (isActive) activeText = phrase.innerText.trim();
+        });
+        if (activeText && activeText !== subOverlay.innerText) {
+            subOverlay.innerText = activeText;
         }
-    }, 200); // Quét mỗi 200ms để đảm bảo độ nhạy
+    }, 200);
 }
-
-// Bắt đầu thực hiện
 startSubtitleSync();

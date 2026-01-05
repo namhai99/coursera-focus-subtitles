@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { box-sizing: border-box; }
+        body { width: 280px; padding: 12px; font-family: 'Segoe UI', sans-serif; background: #f8f9fa; margin: 0; }
+        .container { background: #ffffff; padding: 15px; border-radius: 12px; border: 1px solid #e1e4e8; text-align: center; }
+        .logo { width: 42px; height: 42px; margin-bottom: 5px; }
+        .title { font-size: 15px; font-weight: 700; color: #0056d2; margin-bottom: 12px; }
+        .settings-group { text-align: left; margin-bottom: 15px; padding: 10px; background: #f1f3f5; border-radius: 8px; }
+        .setting-item { margin-bottom: 12px; }
+        .setting-item:last-child { margin-bottom: 0; }
+        label { display: block; font-size: 11px; font-weight: 600; color: #444; margin-bottom: 4px; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .value-display { font-size: 10px; color: #0056d2; float: right; }
+        .btn { display: flex; align-items: center; justify-content: center; width: 100%; margin: 6px 0; padding: 9px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 12px; transition: 0.2s; border: none; cursor: pointer; }
+        .btn-guide { background-color: #0056d2; color: white; }
+        .btn-coffee { background-color: #FFDD00; color: #000; gap: 8px; }
+        .btn-coffee img {
+            width: 12px;
+        }
+        .btn-reset { color: #4a5568; font-size: 11px; cursor: pointer; }
+        .btn-reset:hover { color: #0056d2; }
+        .footer { text-align: center; margin-top: 10px; font-size: 10px; color: #777; }
+        input{
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="icons/icon128.png" class="logo">
+        <div class="title">Coursera Universal Subtitles</div>
+        
+        <div class="settings-group">
+            <div class="setting-item">
+                <label>Font Size <span class="value-display" id="size-val">26px</span></label>
+                <input type="range" id="font-size" min="16" max="50" value="26">
+            </div>
+            <div class="setting-item">
+                <label>Opacity <span class="value-display" id="opacity-val">0.75</span></label>
+                <input type="range" id="bg-opacity" min="0" max="1" step="0.05" value="0.75">
+            </div>
+            <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; align-content: center;">
+                <div style="margin-bottom:0; display: flex; align-items: center; cursor: pointer; gap: 4px;"><input type="checkbox" id="lock-mode" style="margin: 0;"><label for="lock-mode" style="cursor: pointer; margin: 0;">Lock Position</label></div>
+                <div id="reset-btn" class="btn-reset">Reset to Default</div>
+            </div>
+        </div>
+        <a href="https://hainn-it.github.io/coursera-focus-subtitles/" target="_blank" class="btn btn-guide">📖 How to Use?</a>
+        <a href="https://www.buymeacoffee.com/hainn" target="_blank" class="btn btn-coffee"><img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="BMC">
+            Buy me a coffee
+        </a>
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed #eee;">
+            <a href="https://tally.so/r/WOEAAj" target="_blank" style="font-size: 11px; color: #0056d2; text-decoration: none; font-weight: 500;">
+                💡 Suggest a feature or report a bug
+            </a>
+        </div>
+    </div>
+    <div class="footer">Made with ❤️ by Nam Hai</div>
+    <script src="popup.js"></script>
+</body>
+</html>
